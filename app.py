@@ -1,6 +1,7 @@
 from flask import Flask, request, abort
 from tthread import RandomThread
 from threading import Lock
+import os
 
 
 app = Flask(__name__)
@@ -11,8 +12,13 @@ sleep_default = 0.5
 
 mutex = Lock()
 
+POD_NAME_VAR = os.environ.get("POD_NAME_VAR")
+NODE_NAME_VAR = os.environ.get("NODE_NAME_VAR")
+info = f" on Pod '{POD_NAME_VAR}' on Node '{NODE_NAME_VAR}'" if POD_NAME_VAR is not None and NODE_NAME_VAR is not None else ""
+
 @app.route("/")
 def root_main():
+    welcome = f"Heyho{info} &#128540;"
     thread_status = [
         f"{thread_id}: active? {thread.is_active()}"
         for thread_id, thread in thread_pool.items()
@@ -24,7 +30,7 @@ def root_main():
         "< no active thread>"
     )
     return (
-        "<h1> Thread Status </h1> Heyho &#128540; <br><br> Current thread status: <br>"
+        f"<h1> Thread Status </h1> {welcome} <br><br> Current thread status: <br>"
         f"{response}"
     )
 
@@ -39,7 +45,7 @@ def start_thread_id(threadid):
         abort(409, "Thread already started.")
     sleep_time = int(request.args.get('sleep-time') or sleep_default)
     _start_thread(threadid, sleep_time)
-    return f"Starting thread with id '{threadid}'."
+    return f"Starting thread with id '{threadid}'{info}."
 
 @app.route("/start-thread")
 def start_thread():
@@ -55,7 +61,7 @@ def start_thread():
     if threadid in thread_pool and thread_pool[threadid] is not None and thread_pool[threadid].is_active():
         abort(409, "Thread already started.")
     _start_thread(threadid, sleep_time)
-    return f"Starting thread with ID '{threadid}'"
+    return f"Starting thread with ID '{threadid}'{info}."
 
 
 
@@ -69,7 +75,7 @@ def stop_thread_id(threadid):
     elif thread_pool[threadid] is None or not thread_pool[threadid].is_active():
         abort(404, "Thread is not active.")
     _stop_thread(threadid)
-    return f"Stopping thread with id '{threadid}'."
+    return f"Stopping thread with id '{threadid}'{info}."
 
 @app.route("/stop-thread")
 def stop_threads():
@@ -83,7 +89,7 @@ def stop_threads():
     for thread in active_threads:
         _stop_thread(thread.id())
     id_list = [f"Thread '{thread.id()}'" for thread in active_threads]
-    response = f"Stopping threads: <br>{'<br>'.join(id_list)}"
+    response = f"Stopping threads{info}: <br>{'<br>'.join(id_list)}"
     return response
 
 
@@ -96,7 +102,7 @@ def get_content_id(threadid):
         abort(404, "Thread ID is unknown.")
     elif thread_pool[threadid] is None or not thread_pool[threadid].is_active():
         abort(404, "Thread is not active.")
-    return f"<h1>Thread '{threadid}'</h1><br>Content: '{thread_pool[threadid].get_content()}'"
+    return f"<h1>Thread '{threadid}'{info}</h1><br>Content: '{thread_pool[threadid].get_content()}'"
 
 @app.route("/content")
 def get_content():
@@ -112,7 +118,7 @@ def get_content():
         for thread in active_threads
     ]
     response = (
-        "<h1>Thread Content</h1><br>"
+        "<h1>Thread Content{info}</h1><br>"
         f"{'<br>'.join(content)}"
     )
     return response

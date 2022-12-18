@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+        name: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: flaskapp
+        imagePullPolicy: Never
+        env:
+          - name: NODE_NAME_VAR
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME_VAR
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name

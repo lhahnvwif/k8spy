@@ -27,3 +27,28 @@ Endpoints:
   - /content
 
 
+---
+
+
+## 2. For Kubernetes
+Here this is just testing with minikube!!!!
+(Adjust the imagePullPolicy to Never when using Minikube)
+
+This will create a cluster with 5 nodes and 10 replica pods;
+On average(!) 2 pods per node, but does not have to be!
+
+0. $ minikube start --nodes=5
+
+1. $ minikube nodes list
+
+2. $ minikube image load flaskapp
+
+3. $ minikube kubectl -- apply -f deployment.yaml -f service.yaml
+
+4. $ minikube kubectl -- get pods
+
+5. $ minikube kubectl -- get pods -o json
+
+6. $ minikube service list -> open URL in Browser and have fun! :)
+
+7. $ minikube delete
